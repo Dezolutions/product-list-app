@@ -1,7 +1,7 @@
-import { Heading, Layout, Page } from "@shopify/polaris";
+import { Heading, Layout, Page, Card } from "@shopify/polaris";
 
 const Index = () => {
-  
+
   return (
     <Page>
       <Layout>
