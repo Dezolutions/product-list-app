@@ -2,7 +2,8 @@ import React from 'react'
 import { Button, TextField, List } from '@shopify/polaris'
 import styles from './metafield.module.css'
 import { useMutation } from '@apollo/client'
-import { ADD_METAFIELD, DELETE_METAFIELDS, GET_CUSTOMERS } from '../../graphql/mutations'
+import { ADD_METAFIELD, DELETE_METAFIELDS } from '../../graphql/mutations'
+import { GET_CUSTOMERS } from "../../graphql/queries";
 
 const Metafield = ({node, customerId, onDelete}) => {
 
@@ -11,13 +12,12 @@ const Metafield = ({node, customerId, onDelete}) => {
   const onSetKey = React.useCallback((newValue) => setKey(newValue), []);
   const onSetValue = React.useCallback((newValue) => setValue(newValue), []);
 
-  const [customerUpdate,{data,error}] = useMutation(ADD_METAFIELD,{refetchQueries:[
+  const [customerUpdate] = useMutation(ADD_METAFIELD,{refetchQueries:[
     {query: GET_CUSTOMERS}
   ]})
-  const [metafieldDelete,{data:data1}] = useMutation(DELETE_METAFIELDS,{refetchQueries:[
+  const [metafieldDelete] = useMutation(DELETE_METAFIELDS,{refetchQueries:[
     {query: GET_CUSTOMERS}
   ]})
-console.log(data1)
   const onCustomerUpdate = () => {
     customerUpdate({variables: {
       input: {
