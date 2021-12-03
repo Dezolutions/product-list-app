@@ -1,5 +1,5 @@
 import { useQuery } from "@apollo/client";
-import { Layout, Page, Card, TextField, Button, Frame, Loading } from "@shopify/polaris";
+import { Layout, Page, Card, TextField, Button, Frame, Loading, InlineError } from "@shopify/polaris";
 import Customer from "../components/Customer/Customer";
 import CustomerList from "../components/CustomerList/CustomerList";
 import { GET_CUSTOMER, GET_CUSTOMERS } from "../graphql/queries";
@@ -13,9 +13,10 @@ const Index = () => {
   const [selected, setSelected] = React.useState(null)
   const [hasMore, setHasMore] = React.useState(null)
   const [skip, setSkip] = React.useState(false)
+  const [error, setError] = React.useState(false)
 
   //queries
-  const { data, fetchMore, loading } = useQuery(GET_CUSTOMERS,{notifyOnNetworkStatusChange:true})
+  const { data, fetchMore, loading } = useQuery(GET_CUSTOMERS,{notifyOnNetworkStatusChange: true, fetchPolicy: 'network-only'})
   const { data: customerData, loading: searchLoading } = useQuery(GET_CUSTOMER, {
     variables: {email: email}, 
     skip: skip, 
@@ -25,12 +26,17 @@ const Index = () => {
   })
 
   //handlers
-  const onSearch = () => setSkip(false)
+  const onSearch = () => {
+    setSkip(false)
+  }
   const onClear = () => {
     setEmail('')
+    setError(false)
     setFilteredCustomer(null)
   }
-  const onSelect = (customer) => setSelected(customer)
+  const onSelect = (customer) => {
+    setSelected(customer)
+  }
   const onBack = () => {
     setSelected(null)
     setFilteredCustomer(null)
@@ -42,7 +48,8 @@ const Index = () => {
 
   //use effects
   React.useEffect(() => {
-    customerData && email && setFilteredCustomer(customerData?.customers.edges.map(customer => customer.node))
+    customerData && email && setFilteredCustomer(customerData?.customers.edges.map(customer => customer.node));
+    filteredCustomer?.length === 0 ? setError(true) : setError(false);
   },[customerData])
 
   React.useEffect(() => {
@@ -103,13 +110,13 @@ const Index = () => {
                     </div>
                   }
                 />
-                
+                {error && <InlineError message="There is no customer with this email" fieldID="myFieldID" />}
               </div>
             }
-            {customers && !selected &&
+            {customers && !selected && !searchLoading &&
               <>
                 <CustomerList onSelect={onSelect} customers={filteredCustomer || customers} />
-                {hasMore && <Button loading={loading} onClick={onFetchMore}>more</Button>}
+                {hasMore && !filteredCustomer && <Button loading={loading} onClick={onFetchMore}>More customers</Button>}
               </>
             }
             {selected && <Customer {...selected} onBack={onBack} />}

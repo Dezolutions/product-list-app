@@ -6,6 +6,7 @@ import { Provider, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Redirect } from "@shopify/app-bridge/actions";
 import "@shopify/polaris/dist/styles.css";
+import '../assets/base.css'
 import translations from "@shopify/polaris/locales/en.json";
 
 function userLoggedInFetch(app) {
