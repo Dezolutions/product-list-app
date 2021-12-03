@@ -15,7 +15,7 @@ const Customer = ({firstName, onBack, id, lastName}) => {
   React.useEffect(() => {
     setFields(data?.customer.metafields.edges.map(item => ({...item, id: nanoid()})))
   },[data])
-console.log(fields)
+
   const onAdd = () => {
     setFields(prev => [...prev,{node: {key:'', value: ''}, id: nanoid()}])
   }
