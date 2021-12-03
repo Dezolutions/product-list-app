@@ -1,21 +1,23 @@
 import { gql } from '@apollo/client'
 
 export const ADD_METAFIELD = gql`
-mutation customerUpdate($input: CustomerInput!) {
+mutation createMetafield($input: CustomerInput!) {
   customerUpdate(input: $input) {
     customer {
       id
-      metafields(first:5) {
-        edges{
-          node{
-            id
-            key 
-            value
-            namespace
-            valueType
-          }
-        }
-      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`
+export const UPDATE_METAFIELD = gql`
+mutation updateMetafield($input: CustomerInput!) {
+  customerUpdate(input: $input) {
+    customer {
+      id
     }
     userErrors {
       field

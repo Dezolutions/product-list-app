@@ -9,3 +9,10 @@
 .btn{
   margin: 10px 10px 10px 0;
 }
+.activator {
+  margin-right: 10px;
+}
+.btnBlock{
+  display: flex;
+  justify-content: space-between;
+}
