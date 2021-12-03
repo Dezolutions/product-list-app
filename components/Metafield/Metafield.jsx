@@ -56,15 +56,7 @@ const Metafield = ({node, customerId, onDelete, id}) => {
       setBadgeStatus('success')
     }
   })
-  const [metafieldDelete] = useMutation(DELETE_METAFIELDS,{
-    refetchQueries:[
-      {
-        query: GET_CUSTOMER_METAFIELDS, 
-        variables: {
-          id: customerId
-        }
-      }]
-  })
+  const [metafieldDelete] = useMutation(DELETE_METAFIELDS)
 
   //functions
   const onCustomerUpdate = () => {
