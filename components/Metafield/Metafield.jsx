@@ -1,11 +1,14 @@
 import React from 'react'
-import { Button, TextField, List, Modal, TextContainer, Badge } from '@shopify/polaris'
+import { Button, TextField, List, Modal, TextContainer, Badge, InlineError } from '@shopify/polaris'
 import styles from './metafield.module.css'
-import { useMutation } from '@apollo/client'
+import {DebounceInput} from 'react-debounce-input'
+import TextareaAutosize from 'react-textarea-autosize'
+import { useMutation, useQuery } from '@apollo/client'
 import { ADD_METAFIELD, DELETE_METAFIELDS, UPDATE_METAFIELD } from '../../graphql/mutations'
-import { GET_CUSTOMER_METAFIELDS } from "../../graphql/queries";
+import { GET_CUSTOMER_METAFIELDS, GET_PRODUCT_BY_SKU } from "../../graphql/queries";
 
 const Metafield = ({node, customerId, onDelete, id}) => {
+
   //states
   const [active, setActive] = React.useState(false);
   const [keyDisabled, setKeyDisabled] = React.useState(false);
@@ -13,22 +16,39 @@ const Metafield = ({node, customerId, onDelete, id}) => {
   const [value, setValue] = React.useState('')
   const [badgeValue, setBadgeValue] = React.useState('')
   const [badgeStatus, setBadgeStatus] = React.useState('')
+  const [btnDisabled, setBtnDisabled] = React.useState(false)
+  const [btnLoading, setBtnLoading] = React.useState(false)
+  const [skuError, setSkuError] = React.useState(false)
+  const [skip, setSkip] = React.useState(false)
 
-  //handlers
-  const onSetKey = React.useCallback((newValue) => {
-    setKey(newValue)
-  }, []);
+  //queries and mutations
+  useQuery(GET_PRODUCT_BY_SKU,{
+    variables:{
+      count: value.split(',').length, 
+      sku: value.split(',').map(val => val = `sku:${val}`).join(' ').replace(/ /g, ' OR ') 
+    },
+    fetchPolicy: 'network-only',
+    skip: skip,
+    onCompleted: (data) => {
+      setSkip(true)
+      setBtnLoading(false)
+      
+      if (value && value.split(',').length === data?.products.edges.length) {
+        setSkuError(false)
+        setBtnDisabled(false)
+      }
+      else if (value && (value.split(',').length != data?.products.edges.length)) {
+        setSkuError(true)
+        setBtnDisabled(true)
+      }
 
-  const onSetValue = React.useCallback((newValue) => setValue(newValue), []);
-  const handleChange = React.useCallback(() => setActive(!active), [active]);
+      if (!/^[a-zA-Z0-9]+$/.test(value)) {
+        setSkuError(true)
+        setBtnDisabled(true)
+      }
+    }
+  })
 
-  React.useEffect(() => {
-    setValue(node.value)
-    setKey(node.key)
-    node.key && setKeyDisabled(true)
-  },[node])
-
-  //mutations
   const [updateMetafield,{loading:updateLoading}] = useMutation(UPDATE_METAFIELD,{
     refetchQueries:[
       {
@@ -43,6 +63,7 @@ const Metafield = ({node, customerId, onDelete, id}) => {
       setBadgeStatus('attention')
     }
   })
+
   const [createMetafield,{loading:addLoading}] = useMutation(ADD_METAFIELD,{
     refetchQueries:[
     {
@@ -56,7 +77,33 @@ const Metafield = ({node, customerId, onDelete, id}) => {
       setBadgeStatus('success')
     }
   })
+
   const [metafieldDelete] = useMutation(DELETE_METAFIELDS)
+
+  //handlers
+  const onSetKey = React.useCallback((newValue) => {
+    setKey(newValue)
+  }, []);
+
+  const onSetValue = React.useCallback((e) => {
+    setValue(e.target.value)
+    setSkip(false)
+  }, []);
+  const onInput = () => {
+    setBtnLoading(true)
+  }
+  const handleChange = React.useCallback(() => setActive(!active), [active]);
+
+  //useEffects
+  React.useEffect(() => {
+    setSkip(true)
+  },[])
+
+  React.useEffect(() => {
+    setValue(node.value)
+    setKey(node.key)
+    node.key && setKeyDisabled(true)
+  },[node])
 
   //functions
   const onCustomerUpdate = () => {
@@ -73,7 +120,7 @@ const Metafield = ({node, customerId, onDelete, id}) => {
         }
       }})
     }
-    else if (value == node.value) {
+    else if (value != '' && value == node.value) {
       setBadgeValue('Nothing to update')
       setBadgeStatus('info')
     }
@@ -106,7 +153,7 @@ const Metafield = ({node, customerId, onDelete, id}) => {
         }
       }})
     }
-    else if (key == node.key) {
+    else if (key != '' && key == node.key) {
       setBadgeValue('Metafield already created')
       setBadgeStatus('info')
     }
@@ -118,7 +165,7 @@ const Metafield = ({node, customerId, onDelete, id}) => {
   }
 
   const activator = <div className={styles.activator}><Button destructive onClick={handleChange}>Delete</Button></div>
-  
+
   return (
     <List.Item>
       <div className={styles.metafieldItem}>
@@ -129,18 +176,23 @@ const Metafield = ({node, customerId, onDelete, id}) => {
           autoComplete="off"
           label="Metafield key"
         />
-        <TextField 
-          value={value}
-          onChange={onSetValue}
-          autoComplete="off"
-          multiline={true}
-          label="Metafield value"
-        />
+        <div>
+          <div><label>Metafield value</label></div>
+          <DebounceInput
+            element={TextareaAutosize}
+            className={styles.debounceInput}
+            onInput={onInput}
+            value={value}
+            onChange={onSetValue}
+            debounceTimeout={1000}
+          />
+        </div>
       </div>
+      {skuError && <InlineError message="Something went wrong(wrong SKU, invalid symbol or extra comma)" fieldID="myFieldID" />}
       <div className={styles.btnBlock}>
         <div>
-          <span className={styles.btn}><Button loading={updateLoading} onClick={onCustomerUpdate}>Update</Button></span>
-          <span className={styles.btn}><Button loading={addLoading} primary onClick={onMetafieldCreate}>Save</Button></span>
+          <span className={styles.btn}><Button loading={btnLoading || updateLoading} disabled={btnDisabled} onClick={onCustomerUpdate}>Update</Button></span>
+          {!node.key && <span className={styles.btn}><Button loading={btnLoading || addLoading} primary disabled={btnDisabled} onClick={onMetafieldCreate}>Save</Button></span>}
           {badgeValue && <Badge status={badgeStatus}>{badgeValue}</Badge>}
         </div>
         <Modal

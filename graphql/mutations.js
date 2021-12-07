@@ -38,3 +38,31 @@ mutation metafieldDelete($input: MetafieldDeleteInput!) {
   }
 }
 `
+
+export const ADD_TAG = gql`
+mutation tagsAdd($id: ID!, $tags: [String!]!) {
+  tagsAdd(id: $id, tags: $tags) {
+    node {
+      id
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`
+
+export const REMOVE_TAG = gql`
+mutation tagsRemove($id: ID!, $tags: [String!]!) {
+  tagsRemove(id: $id, tags: $tags) {
+    node {
+      id
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`

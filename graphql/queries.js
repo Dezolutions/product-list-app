@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client'
 
 export const GET_CUSTOMERS = gql`
-query getCustomers($after: String, $email: String) {
-  customers(first: 2, query: $email, after: $after) {
+query getCustomers($after: String) {
+  customers(first: 2, after: $after) {
     edges {
       cursor
       node {
@@ -10,16 +10,7 @@ query getCustomers($after: String, $email: String) {
         firstName
         lastName
         email
-        metafields(first:50) {
-          edges{
-            node{
-              id
-              key 
-              value
-              namespace
-            }
-          }
-        }
+        tags
       }
     }
     pageInfo{
@@ -33,6 +24,7 @@ export const GET_CUSTOMER_METAFIELDS = gql`
   query getCustomerMetafields($id: ID!) {
     customer(id:$id){
       firstName
+      tags
       metafields(first:50) {
         edges{
           node{
@@ -71,3 +63,16 @@ export const GET_CUSTOMER = gql`
     }
   }
 `;
+
+export const GET_PRODUCT_BY_SKU = gql`
+query getProductBySku($count: Int!, $sku: String!){
+  products(first:$count, query: $sku) {
+    edges{
+      node{
+        id
+        title
+      }
+    }
+  }
+}
+`
