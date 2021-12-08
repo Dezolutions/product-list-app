@@ -20,9 +20,10 @@ const Metafield = ({node, customerId, onDelete, id}) => {
   const [btnLoading, setBtnLoading] = React.useState(false)
   const [skuError, setSkuError] = React.useState(false)
   const [skip, setSkip] = React.useState(false)
+  const [skus, setSkus] = React.useState([])
 
   //queries and mutations
-  useQuery(GET_PRODUCT_BY_SKU,{
+  const {data: data3} =useQuery(GET_PRODUCT_BY_SKU,{
     variables:{
       count: value.split(',').length, 
       sku: value.split(',').map(val => val = `sku:${val}`).join(' ').replace(/ /g, ' OR ') 
@@ -32,23 +33,27 @@ const Metafield = ({node, customerId, onDelete, id}) => {
     onCompleted: (data) => {
       setSkip(true)
       setBtnLoading(false)
+      const skuArray = data?.productVariants.edges.map(variant => variant.node.sku)
       
-      if (value && value.split(',').length === data?.products.edges.length) {
+      value.split(',').map((sku) => {
+        !skuArray?.includes(sku) && sku != '' && setSkus(prev => [...prev,sku])
+      })
+      if (value && value.split(',').length === data?.productVariants.edges.length) {
         setSkuError(false)
         setBtnDisabled(false)
       }
-      else if (value && (value.split(',').length != data?.products.edges.length)) {
+      else if (value && (value.split(',').length != data?.productVariants.edges.length)) {
         setSkuError(true)
         setBtnDisabled(true)
       }
 
-      if (!/^[a-zA-Z0-9]+$/.test(value)) {
+      if (!/^[a-zA-Z0-9,]+$/.test(value)) {
         setSkuError(true)
         setBtnDisabled(true)
       }
     }
   })
-
+  console.log(data3)
   const [updateMetafield,{loading:updateLoading}] = useMutation(UPDATE_METAFIELD,{
     refetchQueries:[
       {
@@ -91,6 +96,8 @@ const Metafield = ({node, customerId, onDelete, id}) => {
   }, []);
   const onInput = () => {
     setBtnLoading(true)
+    setSkus([])
+    setSkuError(false)
   }
   const handleChange = React.useCallback(() => setActive(!active), [active]);
 
@@ -188,7 +195,7 @@ const Metafield = ({node, customerId, onDelete, id}) => {
           />
         </div>
       </div>
-      {skuError && <InlineError message="Something went wrong(wrong SKU, invalid symbol or extra comma)" fieldID="myFieldID" />}
+      {skuError && <InlineError message={skus.length ? `These SKUs doesn't exist:${skus.join(',')}` : "Something went wrong(invalid symbol or extra comma)"} fieldID="myFieldID" />}
       <div className={styles.btnBlock}>
         <div>
           <span className={styles.btn}><Button loading={btnLoading || updateLoading} disabled={btnDisabled} onClick={onCustomerUpdate}>Update</Button></span>

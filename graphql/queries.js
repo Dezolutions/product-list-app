@@ -66,11 +66,12 @@ export const GET_CUSTOMER = gql`
 
 export const GET_PRODUCT_BY_SKU = gql`
 query getProductBySku($count: Int!, $sku: String!){
-  products(first:$count, query: $sku) {
+  productVariants(first:$count, query: $sku) {
     edges{
       node{
         id
         title
+        sku
       }
     }
   }
