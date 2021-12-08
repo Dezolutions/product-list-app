@@ -99,7 +99,9 @@ const Metafield = ({node, customerId, onDelete, id}) => {
     setSkus([])
     setSkuError(false)
   }
-  const handleChange = React.useCallback(() => setActive(!active), [active]);
+  const handleChange = React.useCallback(() => {
+    setActive(!active)
+  }, [active]);
 
   //useEffects
   React.useEffect(() => {
