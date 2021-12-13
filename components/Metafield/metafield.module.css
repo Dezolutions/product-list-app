@@ -1,0 +1,29 @@
+.metafieldItem {
+  display: flex;
+}
+
+.metafieldItem > * {
+  width: 100%;
+  margin: 10px 10px 10px 0;
+}
+.btn{
+  margin: 10px 10px 10px 0;
+}
+.activator {
+  margin-right: 10px;
+}
+.btnBlock{
+  display: flex;
+  justify-content: space-between;
+}
+
+.debounceInput{
+  width: 100%;
+  resize: none;
+  padding: 0.5rem 1.2rem; 
+  min-height: 3.6rem; 
+  margin-top: 4px; 
+  border: 1px solid black; 
+  border-radius: 5px; 
+  outline: none;
+}

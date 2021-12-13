@@ -1,0 +1,13 @@
+.btn{
+  margin: 10px 10px 10px 0;
+}
+
+.metafieldList{
+  margin: 15px 0 40px;
+}
+
+.customerHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
